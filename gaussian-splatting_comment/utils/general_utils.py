@@ -19,6 +19,10 @@ def inverse_sigmoid(x):
     return torch.log(x/(1-x))
 
 def PILtoTorch(pil_image, resolution):
+    """
+    把PIL image转换为torch tensor
+    
+    """
     resized_image_PIL = pil_image.resize(resolution)
     resized_image = torch.from_numpy(np.array(resized_image_PIL)) / 255.0
     if len(resized_image.shape) == 3:
@@ -31,7 +35,13 @@ def get_expon_lr_func(
 ):
     """
     Copied from Plenoxels
-
+    它返回一个用于计算学习率的辅助函数 helper。这个辅助函数实现了一个连续的学习率衰减函数，具体如下：
+    当 step=0 时，返回 lr_init；
+    当 step=max_steps 时，返回 lr_final；
+    在其他情况下，返回一个 log-linear 插值（等价于指数衰减）。
+    如果 lr_delay_steps>0，则学习率将被某种平滑函数的 lr_delay_mult 缩放，这样在优化开始时，学习率将是 lr_init*lr_delay_mult，
+    但当 steps>lr_delay_steps 时，学习率将缓慢恢复到正常学习率。
+    
     Continuous learning rate decay function. Adapted from JaxNeRF
     The returned rate is lr_init when step=0 and lr_final when step=max_steps, and
     is log-linearly interpolated elsewhere (equivalent to exponential decay).
@@ -62,6 +72,14 @@ def get_expon_lr_func(
     return helper
 
 def strip_lowerdiag(L):
+    """
+    提取下三角矩阵的对角线元素
+    input:  [[L_00, L_01, L_02],
+            [   -, L_11, L_12],
+            [   -,    -, L_22]]
+            
+    output: [L_00, L_01, L_02, L_11, L_12, L_22]
+    """
     uncertainty = torch.zeros((L.shape[0], 6), dtype=torch.float, device="cuda")
 
     uncertainty[:, 0] = L[:, 0, 0]
@@ -73,9 +91,15 @@ def strip_lowerdiag(L):
     return uncertainty
 
 def strip_symmetric(sym):
+    """
+    提取对称矩阵的对角线元素
+    """
     return strip_lowerdiag(sym)
 
 def build_rotation(r):
+    """
+    通过四元数构建旋转矩阵
+    """
     norm = torch.sqrt(r[:,0]*r[:,0] + r[:,1]*r[:,1] + r[:,2]*r[:,2] + r[:,3]*r[:,3])
 
     q = r / norm[:, None]
@@ -99,7 +123,12 @@ def build_rotation(r):
     return R
 
 def build_scaling_rotation(s, r):
+    """
+    
+    """
+    # L是一个batchsize x 3 x 3的对角矩阵
     L = torch.zeros((s.shape[0], 3, 3), dtype=torch.float, device="cuda")
+    # R是一个3x3的旋转矩阵
     R = build_rotation(r)
 
     L[:,0,0] = s[:,0]
@@ -108,6 +137,7 @@ def build_scaling_rotation(s, r):
 
     L = R @ L
     return L
+
 
 def safe_state(silent):
     old_f = sys.stdout

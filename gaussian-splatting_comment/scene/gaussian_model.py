@@ -31,14 +31,19 @@ class GaussianModel:
 
     def setup_functions(self):
         def build_covariance_from_scaling_rotation(scaling, scaling_modifier, rotation):
+            """
+            从缩放和旋转矩阵构建协方差矩阵
+            """
             L = build_scaling_rotation(scaling_modifier * scaling, rotation)
             actual_covariance = L @ L.transpose(1, 2)
+            # 返回有效的
             symm = strip_symmetric(actual_covariance)
             return symm
-        
-        self.scaling_activation = torch.exp
+        # exp
+        self.scaling_activation = torch.exp  
+        # log
         self.scaling_inverse_activation = torch.log
-
+        # 返回有效的协方差矩阵
         self.covariance_activation = build_covariance_from_scaling_rotation
 
         self.opacity_activation = torch.sigmoid
@@ -237,6 +242,9 @@ class GaussianModel:
         return l
 
     def save_ply(self, path):
+        """
+        保存的是每个gs的坐标, 法向, feature_dc, feautre_rest, opacity, 尺寸scale, 旋转rot, 最终拼接成了一个(n, m)的点云形式。
+        """
         mkdir_p(os.path.dirname(path))
 
         xyz = self._xyz.detach().cpu().numpy()
@@ -250,7 +258,7 @@ class GaussianModel:
         dtype_full = [(attribute, 'f4') for attribute in self.construct_list_of_attributes()]
 
         elements = np.empty(xyz.shape[0], dtype=dtype_full)
-        attributes = np.concatenate((xyz, normals, f_dc, f_rest, opacities, scale, rotation), axis=1)
+        attributes = np.concatenate((xyz, normals, f_dc, f_rest, opacities, scale, rotation), axis=1) # 参数都连接在一起
         elements[:] = list(map(tuple, attributes))
         el = PlyElement.describe(elements, 'vertex')
         PlyData([el]).write(path)

@@ -12,16 +12,17 @@
 import os
 import torch
 from random import randint
-from utils.loss_utils import l1_loss, ssim
-from gaussian_renderer import render, network_gui
+from utils.loss_utils import l1_loss, ssim          # loss 有关
+
+from gaussian_renderer import render, network_gui 
 import sys
-from scene import Scene, GaussianModel
+from scene import Scene, GaussianModel              # 相机模型以及高斯初始化有关
 from utils.general_utils import safe_state, get_expon_lr_func
 import uuid
 from tqdm import tqdm
 from utils.image_utils import psnr
 from argparse import ArgumentParser, Namespace
-from arguments import ModelParams, PipelineParams, OptimizationParams
+from arguments import ModelParams, PipelineParams, OptimizationParams # 三个参数加载器
 try:
     from torch.utils.tensorboard import SummaryWriter
     TENSORBOARD_FOUND = True
@@ -278,7 +279,7 @@ if __name__ == "__main__":
     # Start GUI server, configure and run training
     if not args.disable_viewer:
         network_gui.init(args.ip, args.port)
-    torch.autograd.set_detect_anomaly(args.detect_anomaly)
+    torch.autograd.set_detect_anomaly(args.detect_anomaly)  # torch.autograd.set_detect_anomaly 是一个PyTorch函数，用于在自动求导过程中检测异常（例如NaN或无穷大）。如果 args.detect_anomaly 为 True，则启用异常检测；如果为 False，则禁用异常检测。
     training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
 
     # All done

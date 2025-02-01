@@ -1,0 +1,9 @@
+output/
+api/
+third_party/
+checkpoints/
+*.pth
+build/
+diff_gaussian_rasterization.egg-info/
+dist/
+.hypothesis/
