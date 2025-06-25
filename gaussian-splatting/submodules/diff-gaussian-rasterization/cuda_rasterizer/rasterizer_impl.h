@@ -18,6 +18,12 @@
 
 namespace CudaRasterizer
 {
+	/// @brief 用于计算和分配内存的工具类
+	/// @tparam T 
+	/// @param chunk 通用的内存块
+	/// @param ptr 被操作的指针
+	/// @param count 数量
+	/// @param alignment 对齐的值 128
 	template <typename T>
 	static void obtain(char*& chunk, T*& ptr, std::size_t count, std::size_t alignment)
 	{
@@ -63,12 +69,16 @@ namespace CudaRasterizer
 
 		static BinningState fromChunk(char*& chunk, size_t P);
 	};
+	
 
+	// @brief 计算所需的内存大小
+	// @tparam T
+	// @param P 点的数量
 	template<typename T> 
 	size_t required(size_t P)
 	{
 		char* size = nullptr;
-		T::fromChunk(size, P);
-		return ((size_t)size) + 128;
+		T::fromChunk(size, P); //这是关键。它调用了模板参数 T（在这里是 GeometryState）的静态方法 fromChunk
+		return ((size_t)size) + 128; //这里将它的地址值强制转换为一个整数 size_t，并加上128字节的额外余量（padding），然后返回。
 	}
 };

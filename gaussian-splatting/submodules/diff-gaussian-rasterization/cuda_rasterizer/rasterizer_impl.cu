@@ -224,22 +224,22 @@ int CudaRasterizer::Rasterizer::forward(
 	const float focal_y = height / (2.0f * tan_fovy);
 	const float focal_x = width / (2.0f * tan_fovx);
 
-	size_t chunk_size = required<GeometryState>(P);
-	char* chunkptr = geometryBuffer(chunk_size);
-	GeometryState geomState = GeometryState::fromChunk(chunkptr, P);
+	size_t chunk_size = required<GeometryState>(P); //计算所需的显存大小
+	char* chunkptr = geometryBuffer(chunk_size); //分配显存块，并返回首地址
+	GeometryState geomState = GeometryState::fromChunk(chunkptr, P);//将分配的显存块初始化为GeometryState
 
 	if (radii == nullptr)
 	{
 		radii = geomState.internal_radii;
 	}
 
-	dim3 tile_grid((width + BLOCK_X - 1) / BLOCK_X, (height + BLOCK_Y - 1) / BLOCK_Y, 1);
-	dim3 block(BLOCK_X, BLOCK_Y, 1);
+	dim3 tile_grid((width + BLOCK_X - 1) / BLOCK_X, (height + BLOCK_Y - 1) / BLOCK_Y, 1); //图像划分为16x16的tiles，xy方向上各有多少tiles
+	dim3 block(BLOCK_X, BLOCK_Y, 1); //块中线程数量，16*16
 
 	// Dynamically resize image-based auxiliary buffers during training
-	size_t img_chunk_size = required<ImageState>(width * height);
-	char* img_chunkptr = imageBuffer(img_chunk_size);
-	ImageState imgState = ImageState::fromChunk(img_chunkptr, width * height);
+	size_t img_chunk_size = required<ImageState>(width * height); //计算所需的显存大小
+	char* img_chunkptr = imageBuffer(img_chunk_size); //分配显存块，并返回首地址
+	ImageState imgState = ImageState::fromChunk(img_chunkptr, width * height); //imgState从分配的显存块初始化
 
 	if (NUM_CHANNELS != 3 && colors_precomp == nullptr)
 	{
@@ -247,6 +247,7 @@ int CudaRasterizer::Rasterizer::forward(
 	}
 
 	// Run preprocessing per-Gaussian (transformation, bounding, conversion of SHs to RGB)
+	// 计算每一个高斯球投影出来的圆半径及覆盖的范围。
 	CHECK_CUDA(FORWARD::preprocess(
 		P, D, M,
 		means3D,

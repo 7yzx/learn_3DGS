@@ -426,6 +426,7 @@ void FORWARD::render(
 		depth);
 }
 
+/// 这个preprocess函数经过一层封装，实际上是并行调用preprocessCUDA对每个高斯球进行处理：
 void FORWARD::preprocess(int P, int D, int M,
 	const float* means3D,
 	const glm::vec3* scales,

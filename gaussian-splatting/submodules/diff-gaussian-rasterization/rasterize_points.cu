@@ -59,7 +59,7 @@ RasterizeGaussiansCUDA(
     AT_ERROR("means3D must have dimensions (num_points, 3)");
   }
   
-  const int P = means3D.size(0);
+  const int P = means3D.size(0); //高斯点数量
   const int H = image_height;
   const int W = image_width;
 
@@ -77,9 +77,10 @@ RasterizeGaussiansCUDA(
   
   torch::Device device(torch::kCUDA);
   torch::TensorOptions options(torch::kByte);
-  torch::Tensor geomBuffer = torch::empty({0}, options.device(device));
+  torch::Tensor geomBuffer = torch::empty({0}, options.device(device)); //初始化, 还未分配显存空间
   torch::Tensor binningBuffer = torch::empty({0}, options.device(device));
   torch::Tensor imgBuffer = torch::empty({0}, options.device(device));
+  // 这里的resizeFunctional是一个闭包，输出一个调显存空间大小lambda表达式，给后面代码里面分配显存用：
   std::function<char*(size_t)> geomFunc = resizeFunctional(geomBuffer);
   std::function<char*(size_t)> binningFunc = resizeFunctional(binningBuffer);
   std::function<char*(size_t)> imgFunc = resizeFunctional(imgBuffer);
