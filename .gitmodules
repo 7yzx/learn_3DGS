@@ -1,7 +1,3 @@
 [submodule "EasyGaussianSplatting"]
 	path = EasyGaussianSplatting
 	url = git@github.com-7yzx:7yzx/EasyGaussianSplatting.git
-
-[submodule "3DGS_NOTES"]
-	path = 3DGS_NOTES
-	url = git@github.com:guikunchen/3DGS_NOTES.git
