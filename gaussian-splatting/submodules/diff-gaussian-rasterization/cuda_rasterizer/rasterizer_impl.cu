@@ -277,10 +277,14 @@ int CudaRasterizer::Rasterizer::forward(
 	), debug)
 
 	// Compute prefix sum over full list of touched tile counts by Gaussians
+	//计算tiles_touched数组的前缀和存到point_offsets中，从后面的代码可以看出，每个高斯椭球都在BinningState都分配了一片显存空间存储与其相交的所有tiles的数据，
+	//每个高斯椭球相交的tiles数量都不一样，这里point_offsets就存着每个高斯椭球对应的显存空间起点
 	// E.g., [2, 3, 0, 2, 1] -> [2, 5, 5, 7, 8]
 	CHECK_CUDA(cub::DeviceScan::InclusiveSum(geomState.scanning_space, geomState.scan_size, geomState.tiles_touched, geomState.point_offsets, P), debug)
 
 	// Retrieve total number of Gaussian instances to launch and resize aux buffers
+	// 指针point_offsets+P-1是point_offsets数组(tiles_touched数组的前缀和数组)的最后一个元素的值，也即总共覆盖的tiles数量，
+	// 把它赋给num_rendered，所以num_rendered就是需要渲染的tiles总量，被多个高斯球覆盖的tiles重复计数
 	int num_rendered;
 	CHECK_CUDA(cudaMemcpy(&num_rendered, geomState.point_offsets + P - 1, sizeof(int), cudaMemcpyDeviceToHost), debug);
 
@@ -294,11 +298,11 @@ int CudaRasterizer::Rasterizer::forward(
 		P,
 		geomState.means2D,
 		geomState.depths,
-		geomState.point_offsets,
-		binningState.point_list_keys_unsorted,
-		binningState.point_list_unsorted,
+		geomState.point_offsets,  //这里用到上步InclusiveSum得到的累计高斯球touch的tiles数
+		binningState.point_list_keys_unsorted, //存储key (tileID|depth)
+		binningState.point_list_unsorted, // 存储对应的高斯球idx
 		radii,
-		tile_grid)
+		tile_grid) //全图中tile的数量
 	CHECK_CUDA(, debug)
 
 	int bit = getHigherMsb(tile_grid.x * tile_grid.y);

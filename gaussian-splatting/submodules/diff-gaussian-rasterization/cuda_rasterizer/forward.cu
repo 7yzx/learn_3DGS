@@ -437,8 +437,8 @@ void FORWARD::preprocess(int P, int D, int M,
 	bool* clamped,
 	const float* cov3D_precomp,
 	const float* colors_precomp,
-	const float* viewmatrix,
-	const float* projmatrix,
+	const float* viewmatrix,  //世界空间坐标转相机空间坐标
+	const float* projmatrix,  //世界坐标系到NDC坐标系
 	const glm::vec3* cam_pos,
 	const int W, int H,
 	const float focal_x, float focal_y,
