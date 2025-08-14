@@ -2,9 +2,5 @@
 	path = EasyGaussianSplatting
 	url = git@github.com-7yzx:7yzx/EasyGaussianSplatting.git
 <<<<<<< HEAD
-
-[submodule "gsplat"]
-	path = gsplat
-	url = git@github.com:nerfstudio-project/gsplat.git
 =======
 >>>>>>> b8219e7356a3379895728be0a43958149e2ead22
